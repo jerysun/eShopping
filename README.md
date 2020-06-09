@@ -7,6 +7,7 @@ The Web App eShopping aims to help millions retailers easily sell their goods on
 - MVC architecture
 - REST APIs and Client
 - Automapper
+- Anti Forgery Token
 - DI (Dependency Injection)
 - Entity Framework Core
 - Shopping cart

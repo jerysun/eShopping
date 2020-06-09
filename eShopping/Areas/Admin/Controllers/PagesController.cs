@@ -45,6 +45,7 @@ namespace eShopping.Areas.Admin.Controllers
 
         // POST /admin/pages/create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Page page) // Model binding
         {
             if (ModelState.IsValid)
@@ -62,10 +63,73 @@ namespace eShopping.Areas.Admin.Controllers
 
                 _context.Add(page);
                 await _context.SaveChangesAsync();
+
+                TempData["Success"] = "The page has been added!";
+
                 return RedirectToAction("Index");
             }
 
             return View(page);  // re-fill the correct information
+        }
+
+        // GET /admin/pages/edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            Page page = await _context.Pages.FindAsync(id);
+
+            if (page != null)
+                return View(page);
+
+            return NotFound();
+        }
+
+        // POST /admin/pages/edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Page page) // Model binding
+        {
+            if (ModelState.IsValid)
+            {
+                // Never bother Homepage
+                page.Slug = page.Id == 1 ? "home" : page.Title.ToLower().Replace(' ', '-');
+
+                // Cannot change it to the same as other existed page
+                var slug = await _context.Pages.Where(p => p.Id != page.Id).FirstOrDefaultAsync(p => p.Slug == page.Slug);
+
+                if (slug != null)
+                {
+                    ModelState.AddModelError("", "The page already exists");
+                    return View(page); // re-fill the correct information
+                }
+
+                _context.Update(page);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "The page has been updated!";
+
+                return RedirectToAction("Edit", new { id = page.Id });
+            }
+
+            return View(page);  // re-fill the correct information
+        }
+
+        // DELETE /admin/pages/delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            Page page = await _context.Pages.FindAsync(id);
+
+            if (page == null)
+            {
+                TempData["Error"] = "The page does not exist!";
+            }
+            else
+            {
+                _context.Remove(page);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "The page has been deleted!";
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }
