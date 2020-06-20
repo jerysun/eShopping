@@ -131,5 +131,23 @@ namespace eShopping.Areas.Admin.Controllers
 
             return RedirectToAction("Index");
         }
+
+        // POST /admin/pages/reorder
+        [HttpPost]
+        public async Task<IActionResult> Reorder(int[] id)
+        {
+            int count = 1; // the first sorting number because the order of "home" page is zero
+
+            foreach (var pageId in id)
+            {
+                Page page = await _context.Pages.FindAsync(pageId);
+                page.Sorting = count;
+                _context.Update(page);
+                await _context.SaveChangesAsync();
+                ++count;
+            }
+
+            return Ok();
+        }
     }
 }
