@@ -1,6 +1,6 @@
 # eShopping - Sell anything online with shopping cart!
 
-The Web App eShopping aims to help millions retailers easily sell their goods online. It's an open source project based on ASP.NET Core 3.1.
+The CMS style Web App eShopping aims to help millions retailers easily sell their goods online. It's an open source project based on ASP.NET Core 3.1.
 
 ## It has the following features:
 - Razor

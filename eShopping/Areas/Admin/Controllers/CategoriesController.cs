@@ -41,6 +41,7 @@ namespace eShopping.Areas.Admin.Controllers
                 var slug = await _context.Categories.FirstOrDefaultAsync(c => c.Slug == category.Slug);
                 if (slug != null)
                 {
+                    //immediately give an error feedback to front end
                     ModelState.AddModelError("", "The category already exists");
                     return View(category); // re-fill the correct information
                 }
@@ -52,6 +53,77 @@ namespace eShopping.Areas.Admin.Controllers
                 return RedirectToAction("Index");
             }
             return View(category);
+        }
+
+        // GET /admin/categories/edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            Category category = await _context.Categories.FindAsync(id);
+            if (category != null)
+                return View(category);
+
+            return NotFound();
+        }
+
+        // POST /admin/categories/edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                category.Slug = category.Name.ToLower().Replace(" ", "-");
+                var cat = await _context.Categories.Where(c => c.Id != id).FirstOrDefaultAsync(c => c.Slug == category.Slug);
+                if (cat != null)
+                {
+                    ModelState.AddModelError("", "The category already exists!");
+                    return View(category);
+                }
+
+                _context.Update(category);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "The category has been edited.";
+
+                //Actually here we only need id, but for generalization we use routeValues object
+                return RedirectToAction("Edit", new { id }); // GET /admin/categories/edit/id
+            }
+
+            return View(category);
+        }
+
+        // DELETE /admin/pages/delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            Category category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                TempData["Error"] = "The category does not exist any more!";
+            }
+            else
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "The category has been deleted.";
+            }
+            return RedirectToAction("Index");
+        }
+
+        // POST /admin/categories/reorder
+        [HttpPost]
+        public async Task<IActionResult> Reorder(int[] id)
+        {
+            int count = 1; // the first sorting number because the order of "home" category is zero
+
+            foreach (var categoryId in id)
+            {
+                Category category = await _context.Categories.FindAsync(categoryId);
+                category.Sorting = count;
+                _context.Update(category);
+                await _context.SaveChangesAsync();
+                ++count;
+            }
+
+            return Ok();
         }
     }
 }
