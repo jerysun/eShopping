@@ -9,6 +9,8 @@
     <Compile Remove="Migrations\20200217202702_InitialCreate.Designer.cs" />
     <Compile Remove="Migrations\20200217203206_InitialCreate.cs" />
     <Compile Remove="Migrations\20200217203206_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200622144548_CapitalizeCategory.cs" />
+    <Compile Remove="Migrations\20200622144548_CapitalizeCategory.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +25,5 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
-
-
 
 </Project>
