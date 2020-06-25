@@ -16,16 +16,28 @@ namespace eShopping.Areas.Admin.Controllers
     public class ProductsController : Controller
     {
         private readonly EShoppingContext _context;
-        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductsController(EShoppingContext context)
+        public ProductsController(EShoppingContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int p = 1)
         {
+            const int pageSize = 6;
             // Include is just 'join' in SQL. Every time we return a product, it must include the associated category
-            List<Product> products = await _context.Products.OrderByDescending(p => p.Id).Include(p => p.Category).ToListAsync();
+            var products = await _context.Products.OrderByDescending(p => p.Id)
+                                                  .Include(p => p.Category)
+                                                  .Skip((p - 1) * pageSize)
+                                                  .Take(pageSize)
+                                                  .ToListAsync();
+
+            const int pageRange = 10;
+            ViewBag.PageNumber = p;
+            ViewBag.PageRange = pageRange;
+            ViewBag.TotalPages = (int)Math.Ceiling((decimal)_context.Products.Count() / pageSize);
+
             return View(products);
         }
 
@@ -42,6 +54,8 @@ namespace eShopping.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product)
         {
+            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(c => c.Sorting), "Id", "Name");
+
             if (ModelState.IsValid)
             {
                 product.Slug = product.Name.ToLower().Replace(" ", "-");
@@ -59,7 +73,7 @@ namespace eShopping.Areas.Admin.Controllers
 
                 if (product.ImageUpload != null)
                 {
-                    string uploadsDir = Path.Combine(webHostEnvironment.WebRootPath, "media/products");
+                    string uploadsDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/products");
                     imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
                     string filePath = Path.Combine(uploadsDir, imageName);
                     using (FileStream fs = new FileStream(filePath, FileMode.Create))
