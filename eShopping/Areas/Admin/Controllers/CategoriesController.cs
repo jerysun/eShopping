@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using eShopping.Infrastructure;
 using eShopping.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +15,12 @@ namespace eShopping.Areas.Admin.Controllers
     public class CategoriesController : Controller
     {
         private readonly EShoppingContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CategoriesController(EShoppingContext context)
+        public CategoriesController(EShoppingContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET /admin/categories
@@ -101,6 +105,19 @@ namespace eShopping.Areas.Admin.Controllers
             }
             else
             {
+                List<Product> products = await _context.Products.Where(p => p.CategoryId == id).ToListAsync();
+                string fileDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/products");
+
+                foreach (Product product in products)
+                {
+                    if (!string.Equals(product.Image, "noimage.png"))
+                    {
+
+                        string filePath = Path.Combine(fileDir, product.Image);
+                        if (System.IO.File.Exists(filePath))
+                            System.IO.File.Delete(filePath);
+                    }
+                }
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "The category has been deleted.";
