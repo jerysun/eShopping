@@ -102,5 +102,89 @@ namespace eShopping.Areas.Admin.Controllers
 
             return NotFound();
         }
+
+        // GET /admin/products/edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            Product product = await _context.Products.FindAsync(id);
+            if (product != null)
+            {
+                ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(c => c.Sorting).ToList(), "Id", "Name", product.CategoryId);
+                return View(product);
+            }
+            return NotFound();
+
+        }
+
+        // POST /admin/products/edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Product product)
+        {
+            ViewBag.CategoryId = new SelectList(_context.Categories.OrderBy(c => c.Sorting).ToList(), "Id", "Name", product.CategoryId);
+
+            if (ModelState.IsValid)
+            {
+                product.Slug = product.Name.ToLower().Replace(" ", "-");
+                var p = await _context.Products.Where(p => p.Id != id).FirstOrDefaultAsync(p => p.Slug == product.Slug);
+
+                if (p != null)
+                {
+                    ModelState.AddModelError("", "The product already exists!");
+                    return View(product);
+                }
+
+                if (product.ImageUpload != null)
+                {
+                    string uploadsDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/products");
+                    if (!string.Equals(product.Image, "noimage.png"))
+                    {
+                        string oldImagePath = Path.Combine(uploadsDir, product.Image);
+                        if (System.IO.File.Exists(oldImagePath))
+                            System.IO.File.Delete(oldImagePath);
+                    }
+
+                    string imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
+                    string filePath = Path.Combine(uploadsDir, imageName);
+                    using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                    {
+                        await product.ImageUpload.CopyToAsync(fs);
+                    }
+                    product.Image = imageName;
+                }
+
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "The product has been updated.";
+
+                return RedirectToAction("Index");
+            }
+
+            return View(product);
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
