@@ -29,5 +29,35 @@ namespace eShopping.Controllers
 
             return View(cartVM);
         }
+
+        // GET /cart/add/5
+        public async Task<IActionResult> Add(int id)
+        {
+            Product product = await _context.Products.FindAsync(id);
+            if (product == null)
+                return NotFound();
+
+            List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+
+            if (cart.Count > 0)
+            {
+                CartItem cartItem = cart.Where(c => c.ProductId == id).FirstOrDefault();
+                if (cartItem == null)
+                {
+                    cart.Add(new CartItem(product));
+                }
+                else
+                {
+                    ++cartItem.Quantity;
+                }
+            }
+            else
+            {
+                cart.Add(new CartItem(product));
+            }
+
+            HttpContext.Session.SetJson("Cart", cart);
+            return RedirectToAction("Index");
+        }
     }
 }
