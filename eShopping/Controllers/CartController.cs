@@ -59,5 +59,61 @@ namespace eShopping.Controllers
             HttpContext.Session.SetJson("Cart", cart);
             return RedirectToAction("Index");
         }
+
+
+        // GET /cart/decrease/5
+        public IActionResult Decrease(int id)
+        {
+            List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
+            if (cart == null)
+                return NotFound();
+
+            CartItem cartItem = cart.Where(c => c.ProductId == id).FirstOrDefault();
+            if (cartItem == null)
+                return NotFound();
+
+            if (cartItem.Quantity > 1)
+            {
+                --cartItem.Quantity;
+            }
+            else if (cartItem.Quantity == 1)
+            {
+                cart.Remove(cartItem);
+            }
+
+            if (cart.Count == 0)
+            {
+                HttpContext.Session.Remove("Cart");
+            }
+            else
+            {
+                HttpContext.Session.SetJson("Cart", cart);
+            }
+            return RedirectToAction("Index");
+        }
+
+        // GET /cart/remove/5
+        public IActionResult Remove(int id)
+        {
+            List<CartItem> cart = HttpContext.Session.GetJson<List<CartItem>>("Cart");
+            if (cart == null)
+                return NotFound();
+
+            CartItem cartItem = cart.Where(c => c.ProductId == id).FirstOrDefault();
+            if (cartItem == null)
+                return NotFound();
+
+            cart.Remove(cartItem);
+            HttpContext.Session.SetJson("Cart", cart);
+
+            return RedirectToAction("Index");
+        }
+
+        // GET /cart/clear
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove("Cart");
+            return RedirectToAction("Index");
+        }
     }
 }
