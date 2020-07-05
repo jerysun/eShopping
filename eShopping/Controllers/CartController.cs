@@ -57,7 +57,12 @@ namespace eShopping.Controllers
             }
 
             HttpContext.Session.SetJson("Cart", cart);
-            return RedirectToAction("Index");
+
+            // judge if it's an AJAX request
+            if (HttpContext.Request.Headers["X-Requested-With"] != "XMLHttpRequest")
+                return RedirectToAction("Index");
+
+            return ViewComponent("SmallCart");
         }
 
 
