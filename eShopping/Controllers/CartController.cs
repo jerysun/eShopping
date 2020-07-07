@@ -118,7 +118,12 @@ namespace eShopping.Controllers
         public IActionResult Clear()
         {
             HttpContext.Session.Remove("Cart");
-            return RedirectToAction("Index");
+
+            // judge if it's an ajax request
+            if (HttpContext.Request.Headers["X-Requested-With"] != "XMLHttpRequest")
+                return Redirect(Request.Headers["Referer"].ToString());
+
+            return Ok();
         }
     }
 }
