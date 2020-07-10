@@ -1,4 +1,5 @@
 ﻿using eShopping.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace eShopping.Infrastructure
 {
-    public class EShoppingContext : DbContext
+    public class EShoppingContext : IdentityDbContext<AppUser>
     {
         public EShoppingContext(DbContextOptions<EShoppingContext> options) : base(options)
         {
