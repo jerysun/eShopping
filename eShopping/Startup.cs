@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using eShopping.Infrastructure;
+using eShopping.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +38,8 @@ namespace eShopping
             services.AddControllersWithViews();
             services.AddDbContext<EShoppingContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("EShoppingContext")));
+
+            services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<EShoppingContext>().AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +63,7 @@ namespace eShopping
             app.UseSession();
 
             app.UseAuthorization();
+            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {
