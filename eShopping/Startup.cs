@@ -39,7 +39,18 @@ namespace eShopping
             services.AddDbContext<EShoppingContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("EShoppingContext")));
 
-            services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<EShoppingContext>().AddDefaultTokenProviders();
+            // The options callback is optional, you don't have to use it, actually the default
+            // is good enough. Here is just a showcase and for the demo convenience too.
+            services.AddIdentity<AppUser, IdentityRole>(options =>
+                    {
+                        options.Password.RequiredLength = 4;
+                        options.Password.RequireNonAlphanumeric = false;
+                        options.Password.RequireLowercase = false;
+                        options.Password.RequireUppercase = false;
+                        options.Password.RequireDigit = false;
+                    })
+                    .AddEntityFrameworkStores<EShoppingContext>()
+                    .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
