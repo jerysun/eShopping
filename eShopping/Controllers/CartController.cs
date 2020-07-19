@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using eShopping.Infrastructure;
 using eShopping.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eShopping.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
         private readonly EShoppingContext _context;
