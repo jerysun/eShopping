@@ -16,11 +16,13 @@ namespace eShopping.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IPasswordHasher<AppUser> _passwordHasher;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IPasswordHasher<AppUser> passwordHasher)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _passwordHasher = passwordHasher;
         }
 
         [AllowAnonymous]
@@ -98,6 +100,39 @@ namespace eShopping.Controllers
         {
             await _signInManager.SignOutAsync();
             return Redirect("/");
+        }
+
+        //GET /account/edit
+        public async Task<IActionResult> Edit()
+        {
+            AppUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            UserEdit user = new UserEdit(appUser);
+            return View(user);
+        }
+
+        //POST /account/edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(UserEdit user)
+        {
+            if (ModelState.IsValid)
+            {
+                AppUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                appUser.Email = user.Email;
+
+                if (!string.IsNullOrEmpty(user.Password))
+                {
+                    appUser.PasswordHash = _passwordHasher.HashPassword(appUser, user.Password);
+                }
+
+                IdentityResult result = await _userManager.UpdateAsync(appUser);
+                if (result.Succeeded)
+                {
+                    TempData["Success"] = "Your information has been edited!";
+                }
+            }
+
+            return View(user);
         }
     }
 }
