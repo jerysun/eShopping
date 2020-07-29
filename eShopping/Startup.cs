@@ -35,6 +35,7 @@ namespace eShopping
                 // options.IdleTimeout = TimeSpan.FromDays(2);
             });
 
+            services.AddRouting(options => options.LowercaseUrls = true);
             services.AddControllersWithViews();
             services.AddDbContext<EShoppingContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("EShoppingContext")));
